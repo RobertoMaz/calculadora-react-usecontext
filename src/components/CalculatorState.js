@@ -4,6 +4,7 @@ const AppContext = createContext({
     memory: null,
     operation: null,
     currentValue: 0,
+    isDecimal: false,
     addNumber: (value) => {},
     addOperation: (operation) => {},
     getResult: () => {},
@@ -16,14 +17,31 @@ export default function CalculatorState({children}) {
     const [operation, setOperation] = useState(null);
     const [currentValue, setCurrentValue] = useState(0);
     const [isReset, setIsReset] = useState(true);
+    const [isDecimal, setIsDecimal] = useState(false);
 
     function handleAddNumber(value) {
         if(isReset){
-            setCurrentValue(value);
-            setIsReset(false);
+            if(value === "."){
+                setIsDecimal(true);
+            } else {
+                const dot = isDecimal ? "." : "" ;
+                const newValue = currentValue.toString() + dot + value.toString();
+                setCurrentValue(parseFloat(newValue));
+                setIsReset(false);
+                setIsDecimal(false);
+            }
         } else {
-            const newValue = currentValue.toString() + value;
-            setCurrentValue(parseInt(newValue));
+            if(value === "."){
+                setIsDecimal(true);
+                
+            } else {
+                const dot = isDecimal ? "." : "" ;
+                const newValue = currentValue.toString() + dot + value.toString();
+                setCurrentValue(parseFloat(newValue));
+                setIsReset(false);
+                setIsDecimal(false);
+
+            }
         }
     }
 
@@ -31,6 +49,7 @@ export default function CalculatorState({children}) {
         if(currentValue){
             if(operation){
                 handleGetResult();
+                setOperation(op);
             } else {
                 setOperation(op);
                 setMemory(currentValue);
@@ -43,22 +62,22 @@ export default function CalculatorState({children}) {
     function handleGetResult() {
         let result = 0;
         if(currentValue && operation && memory) {
-            switch (operation) {
+            switch (operation) { 
                 case "+":
-                    result = parseFloat(currentValue) + parseFloat(memory);
+                    result = parseFloat(memory) + parseFloat(currentValue);
                     break;
-                // case "-":
-                //     result = parseFloat(currentValue) - parseFloat(memory);
-                //     break;
-                // case "*":
-                //     result = parseFloat(currentValue) * parseFloat(memory);
-                //     break;
-                // case "/":
-                //     result = parseFloat(currentValue) / parseFloat(memory);
-                //     break;
-                // case "%":
-                //     result = parseFloat(currentValue) % parseFloat(memory);
-                //     break;
+                case "-":
+                    result = parseFloat(memory) - parseFloat(currentValue);
+                    break;
+                case "*":
+                    result = parseFloat(memory) * parseFloat(currentValue);
+                    break;
+                case "/":
+                    result = parseFloat(memory) / parseFloat(currentValue);
+                    break;
+                case "%":
+                    result = (parseFloat(memory) / 100) * parseFloat(currentValue);
+                    break;
             
                 default:
                     break;
@@ -70,11 +89,46 @@ export default function CalculatorState({children}) {
             setIsReset(true);
         }
     }
+    
+    function clean() {
+        setCurrentValue(0);
+        setOperation(null);
+        setMemory(0);
+        setIsReset(true);
+    }
+
+    function deleteNumber() {
+        setCurrentValue(parseInt(currentValue / 10));
+    }
+
+    function changeSign() {
+        setCurrentValue(currentValue * -1);
+    }
+
+    function convertToFloat() {
+        if(currentValue.toString().indexOf(".") > 0){
+
+        } else {
+            handleAddNumber(".");
+        }
+    }
 
     function handleExecuteAction(action) {
         switch (action) {
             case "=":
                 handleGetResult();
+                break;
+            case "AC":
+                clean();
+                break;
+            case "<==":
+                deleteNumber();
+                break;
+            case "+/-":
+                changeSign();
+                break;
+            case ".":
+                convertToFloat();
                 break;
         
             default:
@@ -89,6 +143,7 @@ export default function CalculatorState({children}) {
             memory,
             operation,
             currentValue,
+            isDecimal,
             addNumber: handleAddNumber,
             addOperation: handleAddOperation,
             getResult: handleGetResult,
