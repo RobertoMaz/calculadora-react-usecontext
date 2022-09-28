@@ -7,9 +7,14 @@ function CalculatorScreen() {
     return (
         <div className="calculatorScreen">
             <div>
-                Memori: {calculator.memory}
+                <span>
+                {calculator.memory}
+                </span>
                 <br></br>
-                Operation: {calculator.operation}
+                <span>
+                {calculator.operation}
+                </span>
+                <br></br>
             </div>
             <div className="calculatorCurrentValue" >{calculator.currentValue}{calculator.isDecimal ? "." : ""} </div>
         </div>
